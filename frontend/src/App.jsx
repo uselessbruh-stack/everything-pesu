@@ -1,46 +1,22 @@
-import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthStore } from './store/authStore'
-import LoginPage from './views/LoginPage'
-import Dashboard from './views/Dashboard'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './views/LoginPage';
+import Dashboard from './views/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
-  const { isAuthenticated } = useAuthStore()
-
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Login Page Route */}
-        <Route 
-          path="/login" 
-          element={
-            isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />
-          } 
-        />
-        
-        {/* Main Student Dashboard Panel */}
-        <Route 
-          path="/dashboard" 
-          element={
-            isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />
-          } 
-        />
-
-        {/* Fallbacks */}
-        <Route 
-          path="/" 
-          element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
-          } 
-        />
-        
-        <Route 
-          path="*" 
-          element={
-            <Navigate to="/" replace />
-          } 
-        />
-      </Routes>
-    </BrowserRouter>
-  )
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/dashboard/*"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
 }

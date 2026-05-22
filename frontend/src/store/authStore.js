@@ -1,21 +1,21 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
+
+const TOKEN_KEY = 'pesu_token';
 
 export const useAuthStore = create((set) => ({
-  // Initialize state from local storage to persist login sessions
-  token: localStorage.getItem('pesu_token') || null,
-  user: JSON.parse(localStorage.getItem('pesu_user') || 'null'),
-  
-  isAuthenticated: !!localStorage.getItem('pesu_token'),
-  
+  token: localStorage.getItem(TOKEN_KEY) || null,
+  user: null,
+  isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
+
   login: (token, user) => {
-    localStorage.setItem('pesu_token', token);
-    localStorage.setItem('pesu_user', JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, token);
     set({ token, user, isAuthenticated: true });
   },
-  
+
+  setUser: (user) => set({ user }),
+
   logout: () => {
-    localStorage.removeItem('pesu_token');
-    localStorage.removeItem('pesu_user');
+    localStorage.removeItem(TOKEN_KEY);
     set({ token: null, user: null, isAuthenticated: false });
-  }
-}))
+  },
+}));

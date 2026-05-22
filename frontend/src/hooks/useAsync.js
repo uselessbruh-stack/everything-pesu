@@ -1,59 +1,36 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
- * Reusable async execution hook.
- * Handles loading status, results caching, and memory leaks on unmount.
+ * Reusable async data-fetching hook.
+ * @param {Function} asyncFn  — Function that returns a Promise
+ * @param {boolean}  immediate — Fire on mount?
  */
-export function useAsync(asyncFunction, immediate = true, dependencies = []) {
-  const [status, setStatus] = useState('idle');
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  
-  const isMounted = useRef(true);
-  
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+export function useAsync(asyncFn, immediate = true) {
+  const [state, setState] = useState({
+    status: immediate ? 'pending' : 'idle',
+    data: null,
+    error: null,
+  });
 
-  const execute = useCallback(async (...args) => {
-    if (isMounted.current) {
-      setStatus('pending');
-      setError(null);
-    }
-    
+  const execute = useCallback(async () => {
+    setState({ status: 'pending', data: null, error: null });
     try {
-      const result = await asyncFunction(...args);
-      if (isMounted.current) {
-        setData(result);
-        setStatus('success');
-      }
-      return result;
-    } catch (err) {
-      if (isMounted.current) {
-        setError(err);
-        setStatus('error');
-      }
-      throw err;
+      const data = await asyncFn();
+      setState({ status: 'success', data, error: null });
+      return data;
+    } catch (error) {
+      const message =
+        error?.response?.data?.detail || error.message || 'Something went wrong';
+      setState({ status: 'error', data: null, error: message });
+      throw error;
     }
-  }, [asyncFunction]);
+  }, [asyncFn]);
 
   useEffect(() => {
     if (immediate) {
       execute();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies);
+  }, [execute, immediate]);
 
-  return {
-    status,
-    data,
-    error,
-    execute,
-    isLoading: status === 'pending' || status === 'idle',
-    isSuccess: status === 'success',
-    isError: status === 'error'
-  };
+  return { ...state, execute, isLoading: state.status === 'pending' };
 }

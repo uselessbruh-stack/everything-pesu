@@ -2,30 +2,27 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
-  baseURL: '', // Relies on Vite's proxy '/api' in dev, and matches same-origin path in prod
+  baseURL: import.meta.env.VITE_API_URL || '',
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor to attach JWT token
-api.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// Request interceptor — attach JWT
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
-// Response interceptor to handle authentication expiration (401 errors)
+// Response interceptor — handle 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Force user logout on expired/invalid JWT signature
+    if (error.response?.status === 401) {
       useAuthStore.getState().logout();
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

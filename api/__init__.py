@@ -1,1 +1,1 @@
-# Make api a package
+# PESU Academy API

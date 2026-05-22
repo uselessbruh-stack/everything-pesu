@@ -1,274 +1,173 @@
-import React, { useEffect, useState } from 'react'
-import api from '../services/api'
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  User, 
-  Grid, 
-  Layers, 
-  Milestone,
-  RefreshCw
-} from 'lucide-react'
+import { useState, useCallback } from 'react';
+import { Clock, ChevronRight } from 'lucide-react';
+import { useAsync } from '../hooks/useAsync';
+import { timetableService } from '../services/timetableService';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Muted palette — each course gets a consistent accent
+const COURSE_COLORS = [
+  'bg-accent-light text-accent-text border-accent/15',
+  'bg-ok-light text-ok border-ok/15',
+  'bg-warn-light text-warn border-warn/15',
+  'bg-bad-light text-bad border-bad/15',
+  'bg-surface-2 text-ink-muted border-line',
+  'bg-purple-50 text-purple-700 border-purple-200',
+];
 
 export default function TimetableView() {
-  const [activeTab, setActiveTab] = useState('day') // day, week, semester
-  const [selectedDay, setSelectedDay] = useState('') // active day in Day view
-  const [timetableData, setTimetableData] = useState(null)
-  const [semesterCalendar, setSemesterCalendar] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [view, setView] = useState('today');
 
-  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+  const fetchToday = useCallback(() => timetableService.getToday(), []);
+  const fetchWeek = useCallback(() => timetableService.getWeek(), []);
 
-  // Set default day to today's weekday, or Monday if weekend
-  useEffect(() => {
-    const today = new Date().strftime ? new Date().strftime("%A") : new Date().toLocaleDateString('en-US', { weekday: 'long' })
-    if (weekdays.includes(today)) {
-      setSelectedDay(today)
-    } else {
-      setSelectedDay('Monday')
-    }
-  }, [])
+  const todayResult = useAsync(fetchToday, view === 'today');
+  const weekResult = useAsync(fetchWeek, view === 'week');
 
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      // Fetch weekly timetable (contains all weekdays data)
-      const tRes = await api.get('/api/timetable/week')
-      if (tRes.data.success) {
-        setTimetableData(tRes.data.data)
+  const isLoading = view === 'today' ? todayResult.isLoading : weekResult.isLoading;
+  const error = view === 'today' ? todayResult.error : weekResult.error;
+
+  // Build a color map from unique course codes
+  const getColorMap = (classes) => {
+    const map = {};
+    let idx = 0;
+    classes.forEach((c) => {
+      if (!map[c.course_code]) {
+        map[c.course_code] = COURSE_COLORS[idx % COURSE_COLORS.length];
+        idx++;
       }
-      
-      // Fetch semester calendar milestones
-      const cRes = await api.get('/api/timetable/semester')
-      if (cRes.data.success) {
-        setSemesterCalendar(cRes.data.data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch schedules:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const renderDaySchedule = (dayName) => {
-    const classes = timetableData?.[dayName] || []
-    
-    if (classes.length === 0) {
-      return (
-        <div className="py-12 text-center text-slate-500 text-xs font-semibold border border-dashed border-slate-900 rounded-2xl bg-slate-900/10">
-          No classes scheduled for {dayName}.
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4">
-        {classes.map((cls, index) => (
-          <div 
-            key={index}
-            className="p-5 rounded-2xl glass-panel border border-slate-900/60 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-800 transition duration-200"
-          >
-            <div className="flex items-start space-x-4">
-              <div className="p-3 bg-brand-500/10 text-brand-400 rounded-xl border border-brand-500/10 shrink-0">
-                <Clock className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-bold font-mono text-brand-400">{cls.course_code}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-800" />
-                  <span className="text-xs text-slate-500 flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-slate-600" />
-                    <span>{cls.room}</span>
-                  </span>
-                </div>
-                <h4 className="text-base font-extrabold text-white">{cls.subject}</h4>
-                <p className="text-xs text-slate-400 flex items-center gap-1">
-                  <User className="w-3 h-3 text-slate-500" />
-                  <span>{cls.instructor}</span>
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-center bg-slate-900 py-2 px-4 rounded-xl border border-slate-800 self-start md:self-auto min-w-[150px]">
-              <span className="text-xs font-bold text-slate-300 font-mono">{cls.time_slot}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
+    });
+    return map;
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      
-      {/* Header and navigation tabs */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 p-4 glass-panel rounded-2xl border border-slate-900">
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-900 self-start">
-          <button
-            onClick={() => setActiveTab('day')}
-            className={`flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === 'day' ? 'bg-brand-600 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Day View</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('week')}
-            className={`flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === 'week' ? 'bg-brand-600 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Grid className="w-4 h-4" />
-            <span>Week View</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('semester')}
-            className={`flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg transition ${
-              activeTab === 'semester' ? 'bg-brand-600 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Milestone className="w-4 h-4" />
-            <span>Semester Milestones</span>
-          </button>
+    <div className="section-enter space-y-5">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink tracking-tight">Timetable</h1>
+          <p className="text-sm text-ink-muted mt-1">
+            {view === 'today' ? 'Today's schedule' : 'Weekly overview'}
+          </p>
         </div>
-
-        <button 
-          onClick={fetchData}
-          disabled={loading}
-          className="p-2 rounded-xl bg-slate-950 border border-slate-900 hover:bg-slate-900 text-slate-400 hover:text-slate-200 transition"
-          title="Refresh Schedule"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex bg-surface-1 rounded-xl p-0.5">
+          {['today', 'week'].map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
+                view === v ? 'bg-white text-ink shadow-card' : 'text-ink-muted'
+              }`}
+            >
+              {v === 'today' ? 'Today' : 'Week'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {loading ? (
-        <div className="w-full py-20 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500" />
-        </div>
+      {/* Content */}
+      {isLoading ? (
+        <LoadingSpinner text="Loading timetable…" />
+      ) : error ? (
+        <div className="card border-bad/30 bg-bad-light text-bad text-sm p-4">{error}</div>
+      ) : view === 'today' ? (
+        <TodayView data={todayResult.data} getColorMap={getColorMap} />
       ) : (
-        <>
-          {/* Tab 1: Day View */}
-          {activeTab === 'day' && (
-            <div className="space-y-6">
-              {/* Day selection tabs */}
-              <div className="flex overflow-x-auto gap-2 pb-2">
-                {weekdays.map(day => (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    className={`px-4 py-2.5 text-xs font-extrabold rounded-xl shrink-0 transition border ${
-                      selectedDay === day 
-                        ? 'bg-brand-600/10 text-brand-400 border-brand-500/20' 
-                        : 'bg-slate-900/40 text-slate-500 border-slate-900 hover:text-slate-300'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-              
-              {renderDaySchedule(selectedDay)}
-            </div>
-          )}
-
-          {/* Tab 2: Week View */}
-          {activeTab === 'week' && (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {weekdays.map(day => {
-                const classes = timetableData?.[day] || []
-                return (
-                  <div key={day} className="glass-panel p-5 rounded-2xl border border-slate-900 flex flex-col space-y-4">
-                    <h3 className="text-sm font-extrabold text-white border-b border-slate-900 pb-2.5 tracking-tight">
-                      {day}
-                    </h3>
-                    
-                    <div className="flex-1 space-y-3.5">
-                      {classes.length === 0 ? (
-                        <p className="text-[10px] text-slate-600 font-semibold italic text-center py-6">No classes</p>
-                      ) : (
-                        classes.map((cls, idx) => (
-                          <div 
-                            key={idx}
-                            className="p-3.5 bg-slate-900/40 rounded-xl border border-slate-900/60 flex flex-col space-y-1 hover:border-slate-800 transition"
-                          >
-                            <span className="text-[9px] font-bold font-mono text-brand-400 uppercase">{cls.course_code}</span>
-                            <h4 className="text-xs font-extrabold text-white line-clamp-1">{cls.subject}</h4>
-                            <p className="text-[10px] text-slate-500 font-mono pt-1.5 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>{cls.time_slot.split('-')[0]}</span>
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Tab 3: Semester Milestones */}
-          {activeTab === 'semester' && (
-            <div className="glass-panel p-6 md:p-8 rounded-2xl border border-slate-900 space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-white">Semester Events & Dates</h3>
-                <p className="text-xs text-slate-500 mt-1">Milestones, evaluations, holidays and deadlines from PESU Calendar.</p>
-              </div>
-
-              {semesterCalendar.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-12">No milestone dates available.</p>
-              ) : (
-                <div className="relative border-l border-slate-900 pl-6 ml-2 space-y-6">
-                  {semesterCalendar.map((evt, idx) => {
-                    // Decide bullet color
-                    let dotColor = 'bg-brand-500 border-slate-950'
-                    let bgStyle = 'bg-slate-900/30'
-                    
-                    const titleLower = evt.title.toLowerCase()
-                    if (titleLower.includes('isa') || titleLower.includes('esa')) {
-                      dotColor = 'bg-amber-500 border-slate-950'
-                      bgStyle = 'bg-amber-500/5 border-amber-500/10'
-                    } else if (titleLower.includes('holiday') || titleLower.includes('day') || titleLower.includes('festival')) {
-                      dotColor = 'bg-emerald-500 border-slate-950'
-                      bgStyle = 'bg-emerald-500/5 border-emerald-500/10'
-                    }
-
-                    return (
-                      <div key={idx} className="relative group">
-                        {/* Bullet dot */}
-                        <div className={`absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-2 ${dotColor}`} />
-                        
-                        {/* Event Card */}
-                        <div className={`p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:border-slate-800 transition ${bgStyle}`}>
-                          <div>
-                            <span className="text-[10px] font-bold text-brand-400 font-mono uppercase tracking-wider bg-brand-500/5 px-2 py-0.5 rounded border border-brand-500/10">
-                              {evt.type}
-                            </span>
-                            <h4 className="text-sm font-extrabold text-white mt-2 group-hover:text-brand-300 transition duration-150">
-                              {evt.title}
-                            </h4>
-                          </div>
-                          
-                          <span className="text-xs font-bold text-slate-400 font-mono shrink-0 whitespace-nowrap self-start sm:self-auto bg-slate-950/80 px-3 py-1 rounded-lg border border-slate-900">
-                            {evt.date}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </>
+        <WeekView data={weekResult.data} getColorMap={getColorMap} />
       )}
     </div>
-  )
+  );
+}
+
+function TodayView({ data, getColorMap }) {
+  if (!data || !data.classes || data.classes.length === 0) {
+    return (
+      <div className="card text-center py-12">
+        <Clock className="w-8 h-8 text-ink-faint mx-auto mb-3" />
+        <p className="text-sm text-ink-muted">No classes scheduled for {data?.day || 'today'}</p>
+      </div>
+    );
+  }
+
+  const colorMap = getColorMap(data.classes);
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-ink-faint font-medium uppercase tracking-wider px-1">
+        {data.day} · {data.total_classes} classes
+      </p>
+      {data.classes.map((cls, i) => (
+        <div
+          key={i}
+          className={`card flex items-center gap-4 animate-slide-up`}
+          style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'both' }}
+        >
+          {/* Time */}
+          <div className="shrink-0 w-20 text-right">
+            <p className="text-xs font-mono text-ink-muted tabular-nums">
+              {cls.time || '—'}
+            </p>
+          </div>
+          {/* Divider */}
+          <div className={`w-1 h-10 rounded-full ${colorMap[cls.course_code]?.split(' ')[0] || 'bg-surface-2'}`} />
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-ink truncate">{cls.course_name}</p>
+            <p className="text-xs text-ink-faint mt-0.5">
+              {cls.course_code}{cls.instructor ? ` · ${cls.instructor}` : ''}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeekView({ data, getColorMap }) {
+  if (!data || !data.week || Object.keys(data.week).length === 0) {
+    return (
+      <div className="card text-center py-12">
+        <p className="text-sm text-ink-muted">No timetable data available</p>
+      </div>
+    );
+  }
+
+  // Get all unique courses across the week for a consistent color map
+  const allClasses = Object.values(data.week).flat();
+  const colorMap = getColorMap(allClasses);
+
+  return (
+    <div className="space-y-4">
+      {DAYS.map((day) => {
+        const classes = data.week[day];
+        if (!classes || classes.length === 0) return null;
+        return (
+          <div key={day}>
+            <p className="text-xs font-medium text-ink-faint uppercase tracking-wider px-1 mb-2">
+              {day} · {classes.length} classes
+            </p>
+            <div className="space-y-1.5">
+              {classes.map((cls, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border ${colorMap[cls.course_code] || 'bg-surface-1 text-ink-muted border-line'}`}
+                >
+                  <span className="text-xs font-mono shrink-0 w-24 tabular-nums">
+                    {cls.time || '—'}
+                  </span>
+                  <span className="text-xs font-medium truncate flex-1">
+                    {cls.course_name}
+                  </span>
+                  <span className="text-xs opacity-70 hidden sm:block">
+                    {cls.instructor}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }

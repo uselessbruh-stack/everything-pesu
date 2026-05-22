@@ -1,204 +1,134 @@
-import React, { useEffect, useState } from 'react'
-import api from '../services/api'
-import { 
-  Award, 
-  ChevronDown, 
-  ChevronUp, 
-  BookOpen, 
-  FileText,
-  TrendingUp,
-  ExternalLink
-} from 'lucide-react'
+import { useState, useCallback } from 'react';
+import { Award, ChevronDown } from 'lucide-react';
+import { useAsync } from '../hooks/useAsync';
+import { resultsService } from '../services/resultsService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
-export default function ResultsView({ onSelectCourse }) {
-  const [resultsData, setResultsData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [expandedSems, setExpandedSems] = useState({}) // track open/closed sem accordions
+export default function ResultsView() {
+  const fetchResults = useCallback(() => resultsService.getAll(), []);
+  const { data, isLoading, error } = useAsync(fetchResults);
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true)
-      try {
-        const res = await api.get('/api/results')
-        if (res.data.success) {
-          setResultsData(res.data.data)
-          
-          // Auto-expand all semesters by default
-          const initialExpanded = {}
-          Object.keys(res.data.data).forEach(sem => {
-            initialExpanded[sem] = true
-          })
-          setExpandedSems(initialExpanded)
-        }
-      } catch (err) {
-        console.error('Failed to load results:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const semesters = data?.semesters || [];
+  const [activeSem, setActiveSem] = useState(null);
 
-    fetchResults()
-  }, [])
-
-  const toggleSem = (semName) => {
-    setExpandedSems(prev => ({
-      ...prev,
-      [semName]: !prev[semName]
-    }))
+  // Default to first semester once loaded
+  if (semesters.length > 0 && activeSem === null) {
+    // Use timeout-free approach — just render with first
   }
-
-  // Parses fractional string marks "29 /40.0" and returns percentage and clean string
-  const parseMarks = (marksStr) => {
-    if (!marksStr || marksStr.trim() === '') return { score: 0, pct: 0, display: '-' }
-    
-    // Clean string formatting
-    const cleaned = marksStr.replace(/\s+/g, '') // remove spaces
-    const parts = cleaned.split('/')
-    
-    if (parts.length === 2) {
-      const score = parseFloat(parts[0]) || 0
-      const total = parseFloat(parts[1]) || 1
-      const pct = (score / total) * 100
-      return { 
-        score, 
-        total, 
-        pct, 
-        display: `${score} / ${total}` 
-      }
-    }
-    
-    return { score: 0, pct: 0, display: marksStr }
-  }
+  const currentSem = activeSem ?? semesters[0]?.semester;
+  const semData = semesters.find((s) => s.semester === currentSem);
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
-      
-      {/* Overview stats header */}
-      <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between p-6 bg-gradient-to-r from-brand-900/40 via-indigo-950/20 to-slate-900/20 border border-brand-500/10 rounded-2xl">
-        <div className="space-y-1">
-          <h1 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">
-            Academic Grades & <span className="gradient-text">Assessments</span>
-          </h1>
-          <p className="text-xs text-slate-400">
-            Track your performance in internal exams (ISAs), assignments, and practicals.
-          </p>
-        </div>
-        <div className="flex items-center space-x-2 bg-slate-900/60 py-2 px-4 rounded-xl border border-slate-800 self-start md:self-auto">
-          <Award className="w-4 h-4 text-brand-400" />
-          <span className="text-xs font-semibold text-slate-300">
-            Target Grade: <span className="text-brand-400 font-bold">9.0+ SGPA</span>
-          </span>
-        </div>
+    <div className="section-enter space-y-5">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-ink tracking-tight">Results</h1>
+        <p className="text-sm text-ink-muted mt-1">Exam scores & assessments</p>
       </div>
 
-      {loading ? (
-        <div className="w-full py-20 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500" />
-        </div>
-      ) : resultsData && Object.keys(resultsData).length === 0 ? (
-        <div className="glass-panel p-8 text-center text-slate-500 text-sm">
-          No grade sheet reports available at this moment.
+      {isLoading ? (
+        <LoadingSpinner text="Loading results…" />
+      ) : error ? (
+        <div className="card border-bad/30 bg-bad-light text-bad text-sm p-4">{error}</div>
+      ) : semesters.length === 0 ? (
+        <div className="card text-center py-12">
+          <Award className="w-8 h-8 text-ink-faint mx-auto mb-3" />
+          <p className="text-sm text-ink-muted">No results available yet</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {resultsData && Object.entries(resultsData).map(([semName, semInfo]) => {
-            const isExpanded = expandedSems[semName]
-            const coursesList = semInfo.courses || []
-            
+        <>
+          {/* Semester tabs */}
+          <div className="flex bg-surface-1 rounded-xl p-0.5 w-fit">
+            {semesters.map(({ semester }) => (
+              <button
+                key={semester}
+                onClick={() => setActiveSem(semester)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  currentSem === semester
+                    ? 'bg-white text-ink shadow-card'
+                    : 'text-ink-muted hover:text-ink'
+                }`}
+              >
+                {semester}
+              </button>
+            ))}
+          </div>
+
+          {/* Courses */}
+          {semData && (
+            <div className="space-y-2">
+              <p className="text-xs text-ink-faint px-1">
+                {semData.course_count} courses · {semData.type}
+              </p>
+              {semData.courses.map((course, i) => (
+                <ResultCard key={course.course_code} course={course} index={i} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function ResultCard({ course, index }) {
+  const [open, setOpen] = useState(false);
+  const { course_code, course_name, assessments, marks } = course;
+
+  const assessmentEntries = Object.entries(assessments || {});
+
+  return (
+    <div
+      className="card animate-slide-up"
+      style={{ animationDelay: `${index * 0.04}s`, animationFillMode: 'both' }}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-3 text-left"
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-ink truncate">{course_name}</p>
+          <p className="text-xs text-ink-faint font-mono mt-0.5">{course_code}</p>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-ink-faint shrink-0 transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      {open && assessmentEntries.length > 0 && (
+        <div className="mt-4 border-t border-line pt-3 space-y-2.5 animate-fade-in">
+          {assessmentEntries.map(([name, rawValue]) => {
+            const markData = marks?.[name];
+            const obtained = markData?.obtained;
+            const total = markData?.total;
+            const hasScore = obtained !== undefined && total !== undefined;
+            const pct = hasScore ? (parseFloat(obtained) / parseFloat(total)) * 100 : null;
+
             return (
-              <div key={semName} className="glass-panel rounded-2xl border border-slate-900 overflow-hidden">
-                {/* Accordion Trigger Header */}
-                <button
-                  onClick={() => toggleSem(semName)}
-                  className="w-full py-4.5 px-6 bg-slate-900/30 border-b border-slate-900/60 hover:bg-slate-900/40 transition flex items-center justify-between text-left"
-                >
-                  <div className="flex items-center space-x-3.5">
-                    <div className="p-2 bg-brand-500/10 text-brand-400 rounded-lg border border-brand-500/10">
-                      <BookOpen className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-white text-base tracking-tight">{semName}</h3>
-                      <p className="text-[10px] text-slate-500 font-semibold">{semInfo.course_count} active registered courses</p>
-                    </div>
-                  </div>
-                  {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
-                </button>
-
-                {/* Accordion Content Panel */}
-                {isExpanded && (
-                  <div className="p-6 space-y-6 divide-y divide-slate-900/70">
-                    {coursesList.map((course, idx) => (
-                      <div 
-                        key={course.course_code} 
-                        className={`pt-5 first:pt-0 flex flex-col lg:flex-row gap-6 justify-between items-start`}
-                      >
-                        {/* Course Info */}
-                        <div className="space-y-2 lg:max-w-xs w-full">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-bold font-mono text-brand-400 uppercase bg-brand-500/5 px-2 py-0.5 rounded border border-brand-500/10">
-                              {course.course_code}
-                            </span>
-                            
-                            <button
-                              onClick={() => onSelectCourse(course.course_code)}
-                              className="text-[10px] text-slate-500 hover:text-brand-400 flex items-center gap-0.5 transition font-semibold"
-                              title="Go to attendance details"
-                            >
-                              <span>View Attendance</span>
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
-                          
-                          <h4 className="text-sm font-extrabold text-white tracking-tight line-clamp-2">
-                            {course.course_name}
-                          </h4>
-                        </div>
-
-                        {/* Assessments Listing */}
-                        <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4.5">
-                          {Object.entries(course.assessments || {}).map(([examName, rawScore]) => {
-                            const parsed = parseMarks(rawScore)
-                            
-                            // Color progress bar depending on percentage
-                            let colorClass = 'bg-brand-500'
-                            if (parsed.pct < 60) colorClass = 'bg-rose-500'
-                            else if (parsed.pct < 75) colorClass = 'bg-amber-500'
-                            else if (parsed.pct >= 85) colorClass = 'bg-emerald-500'
-
-                            return (
-                              <div 
-                                key={examName}
-                                className="p-3 bg-slate-900/30 rounded-xl border border-slate-900 flex flex-col justify-between space-y-2 hover:border-slate-800/80 transition"
-                              >
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="font-bold text-slate-400 flex items-center gap-1">
-                                    <FileText className="w-3.5 h-3.5 text-slate-500" />
-                                    {examName}
-                                  </span>
-                                  <span className="font-extrabold text-white font-mono text-[11px]">{parsed.display}</span>
-                                </div>
-                                
-                                {parsed.total && (
-                                  <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-900">
-                                    <div 
-                                      className={`h-full rounded-full ${colorClass}`}
-                                      style={{ width: `${Math.min(100, parsed.pct)}%` }}
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
+              <div key={name}>
+                <div className="flex justify-between items-center text-sm mb-1">
+                  <span className="text-ink-muted">{name}</span>
+                  <span className="font-medium text-ink tabular-nums">
+                    {hasScore ? `${obtained} / ${total}` : rawValue}
+                  </span>
+                </div>
+                {pct !== null && (
+                  <div className="att-bar">
+                    <div
+                      className={`att-bar-fill ${
+                        pct >= 70 ? 'bg-ok' : pct >= 50 ? 'bg-warn' : 'bg-bad'
+                      }`}
+                      style={{ width: `${Math.min(100, pct)}%` }}
+                    />
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

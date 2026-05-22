@@ -9,7 +9,7 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "frontend/dist"
       }
     }
   ],
@@ -19,16 +19,8 @@
       "dest": "api/main.py"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/frontend/$1",
-      "status": 200
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/index.html"
+      "dest": "frontend/$1"
     }
   ]
 }

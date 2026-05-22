@@ -1,60 +1,40 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Dict, Any, List, Optional
-from api.auth import verify_jwt_token
-from api.config import settings, cache
-from api.data_store import load_raw_data
+"""
+Results endpoints for PESU Academy API.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from .auth import get_current_user
+from .data_loader import get_results, get_results_for_course
 
 router = APIRouter(prefix="/api/results", tags=["results"])
 
+
 @router.get("")
-async def get_all_results(current_user: dict = Depends(verify_jwt_token)):
-    """
-    Get exam and assignment results.
-    Cached for 1 hour.
-    """
-    username = current_user["username"]
-    cache_key = f"results:{username}"
-    
-    cached_results = cache.get(cache_key)
-    if cached_results:
-        return {"success": True, "data": cached_results, "cached": True}
-        
-    data = load_raw_data()
-    if not data:
-        raise HTTPException(status_code=404, detail="No results found")
-        
-    results = data.get("results", {})
-    
-    cache.set(cache_key, results, settings.CACHE_TTL["results"])
-    return {"success": True, "data": results, "cached": False}
+async def all_results(user: dict = Depends(get_current_user)):
+    """Get all exam results grouped by semester."""
+    results = get_results()
+    # Transform to a cleaner structure
+    semesters = []
+    for sem_name, sem_data in results.items():
+        semesters.append({
+            "semester": sem_name,
+            "course_count": sem_data.get("course_count", 0),
+            "type": sem_data.get("type", "unknown"),
+            "courses": sem_data.get("courses", []),
+        })
+
+    # Sort semesters (Sem-2 first = most recent)
+    semesters.sort(key=lambda s: s["semester"], reverse=True)
+    return {"semesters": semesters}
+
 
 @router.get("/course/{course_code}")
-async def get_course_results(course_code: str, current_user: dict = Depends(verify_jwt_token)):
-    """Get exam results for a specific course code"""
-    data = load_raw_data()
-    if not data:
-        raise HTTPException(status_code=404, detail="No records found")
-        
-    results = data.get("results", {})
-    
-    course_results = {}
-    for sem_name, sem_data in results.items():
-        courses = sem_data.get("courses", [])
-        course = next((c for c in courses if c["course_code"].upper() == course_code.upper()), None)
-        if course:
-            course_results = {
-                "semester": sem_name,
-                "course_code": course["course_code"],
-                "course_name": course["course_name"],
-                "assessments": course.get("assessments", {}),
-                "marks": course.get("marks", {})
-            }
-            break
-            
-    if not course_results:
+async def course_results(course_code: str, user: dict = Depends(get_current_user)):
+    """Get results for a specific course across all semesters."""
+    results = get_results_for_course(course_code)
+    if not results:
         raise HTTPException(
-            status_code=404, 
-            detail=f"No results found for course {course_code}"
+            status_code=404, detail=f"No results found for course {course_code}"
         )
-        
-    return {"success": True, "data": course_results}
+    return {"course_code": course_code, "results": results}
