@@ -1,85 +1,59 @@
 """
-Timetable endpoints for PESU Academy API.
+Timetable endpoints.
+The pesuacademy library doesn't support timetable scraping,
+so we fall back to attendance_data.json if available, or return empty.
 """
 
+import json
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Depends
 
 try:
     from .auth import get_current_user
-    from .data_loader import get_timetable, get_timetable_for_day
 except ImportError:
     from auth import get_current_user
-    from data_loader import get_timetable, get_timetable_for_day
 
 router = APIRouter(prefix="/api/timetable", tags=["timetable"])
 
-DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-
-def _parse_slot(time_slot: str, raw_info: str) -> list[dict]:
-    """Parse a timetable slot into structured class entries."""
-    entries = []
-    # Raw info can contain multiple classes separated by newlines
-    parts = raw_info.split("\n")
-    i = 0
-    while i < len(parts):
-        part = parts[i].strip()
-        if not part:
-            i += 1
-            continue
-        # Format: "COURSECODE-COURSE NAME"
-        if "-" in part:
-            code_name = part.split("-", 1)
-            code = code_name[0].strip()
-            name = code_name[1].strip() if len(code_name) > 1 else ""
-            # Next line might be instructor
-            instructor = ""
-            if i + 1 < len(parts):
-                next_part = parts[i + 1].strip().rstrip(",")
-                # If next part doesn't look like a course code, it's an instructor
-                if next_part and not any(c.isdigit() for c in next_part[:4]):
-                    instructor = next_part
-                    i += 1
-            entries.append({
-                "course_code": code,
-                "course_name": name,
-                "instructor": instructor,
-                "time": time_slot,
-            })
-        i += 1
-    return entries
+def _load_timetable() -> dict:
+    """Try to load timetable from the JSON file (static data)."""
+    candidates = [
+        Path(__file__).resolve().parent.parent / "attendance_data.json",
+        Path(__file__).resolve().parent / "attendance_data.json",
+    ]
+    for p in candidates:
+        if p.exists():
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return data.get("timetable", {})
+            except Exception:
+                pass
+    return {}
 
 
 @router.get("")
-async def today_timetable(user: dict = Depends(get_current_user)):
-    """Get today's schedule."""
-    today = DAY_NAMES[datetime.now().weekday()]
-    day_schedule = get_timetable_for_day(today)
-
-    classes = []
-    for time_slot, raw_info in day_schedule.items():
-        classes.extend(_parse_slot(time_slot, raw_info))
+async def get_timetable(user: dict = Depends(get_current_user)):
+    """Get today's timetable."""
+    timetable = _load_timetable()
+    today = datetime.now().strftime("%A")
+    day_schedule = timetable.get(today, {})
 
     return {
         "day": today,
-        "classes": classes,
-        "total_classes": len(classes),
+        "schedule": day_schedule,
+        "note": "Timetable is loaded from cached data (live scraping not supported for timetable)"
     }
 
 
 @router.get("/week")
-async def week_timetable(user: dict = Depends(get_current_user)):
-    """Get full weekly schedule."""
-    timetable = get_timetable()
-    week = {}
-    for day in DAY_NAMES[:6]:  # Mon-Sat
-        day_schedule = timetable.get(day, {})
-        classes = []
-        for time_slot, raw_info in day_schedule.items():
-            classes.extend(_parse_slot(time_slot, raw_info))
-        if classes:
-            week[day] = classes
-
-    return {"week": week}
+async def get_weekly_timetable(user: dict = Depends(get_current_user)):
+    """Get the full weekly timetable."""
+    timetable = _load_timetable()
+    return {
+        "timetable": timetable,
+        "note": "Timetable is loaded from cached data (live scraping not supported for timetable)"
+    }

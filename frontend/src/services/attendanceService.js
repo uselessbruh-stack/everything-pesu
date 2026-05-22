@@ -7,9 +7,4 @@ export const attendanceService = {
 
   getCourse: (code) =>
     api.get(`/api/attendance/course/${code}`).then((r) => r.data),
-
-  sync: () => api.post('/api/attendance/sync').then((r) => r.data),
-
-  calculate: (params) =>
-    api.post('/api/attendance/calculate', params).then((r) => r.data),
 };

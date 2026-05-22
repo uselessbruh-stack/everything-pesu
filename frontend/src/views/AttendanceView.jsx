@@ -11,22 +11,9 @@ export default function AttendanceView({ onCourseSelect }) {
   const targetPercentage = useAttendanceStore((s) => s.targetPercentage);
   const setTarget = useAttendanceStore((s) => s.setTargetPercentage);
 
-  const [syncing, setSyncing] = useState(false);
   const [customTarget, setCustomTarget] = useState('');
 
   const courses = data?.courses || [];
-
-  const handleSync = async () => {
-    setSyncing(true);
-    try {
-      await attendanceService.sync();
-      await execute();
-    } catch (_) {
-      // ignore
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const handleCustomTarget = () => {
     const val = parseInt(customTarget, 10);
@@ -42,15 +29,15 @@ export default function AttendanceView({ onCourseSelect }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-ink tracking-tight">Attendance</h1>
-          <p className="text-sm text-ink-muted mt-1">Course-wise breakdown</p>
+          <p className="text-sm text-ink-muted mt-1">Live from PESU Academy</p>
         </div>
         <button
-          onClick={handleSync}
-          disabled={syncing}
+          onClick={() => execute()}
+          disabled={isLoading}
           className="btn-ghost text-xs shrink-0"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-          {syncing ? 'Syncing…' : 'Sync'}
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          {isLoading ? 'Loading…' : 'Refresh'}
         </button>
       </div>
 
