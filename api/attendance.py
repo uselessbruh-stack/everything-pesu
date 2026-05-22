@@ -2,6 +2,7 @@
 Attendance endpoints for PESU Academy API.
 """
 
+import os
 import math
 from typing import Optional
 
@@ -15,6 +16,11 @@ from .data_loader import (
     get_course,
     get_courses,
     get_summary,
+)
+from .scraper_service import (
+    get_scrape_status,
+    is_scraper_available,
+    run_scraper_async,
 )
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
@@ -56,13 +62,37 @@ async def attendance_course(course_code: str, user: dict = Depends(get_current_u
 
 @router.post("/sync")
 async def sync_attendance(user: dict = Depends(get_current_user)):
-    """Clear cache and reload data from file."""
-    clear_cache()
-    summary = get_summary()
-    return {
-        "message": "Data reloaded from source",
-        "summary": summary,
-    }
+    """
+    Sync attendance data.
+    - If Selenium is available (local dev): launches the PESU scraper in background
+    - If not (Vercel serverless): clears cache and reloads from JSON file
+    """
+    if is_scraper_available():
+        username = os.getenv("PESU_USERNAME", "")
+        password = os.getenv("PESU_PASSWORD", "")
+        if not username or not password:
+            raise HTTPException(
+                status_code=400,
+                detail="PESU_USERNAME and PESU_PASSWORD environment variables are required for live sync",
+            )
+        result = await run_scraper_async(username, password)
+        return result
+    else:
+        # Serverless fallback: just reload from JSON
+        clear_cache()
+        summary = get_summary()
+        return {
+            "status": "reloaded",
+            "message": "Cache cleared and data reloaded from file. "
+                       "Live scraping requires Selenium (not available in serverless).",
+            "summary": summary,
+        }
+
+
+@router.get("/sync/status")
+async def sync_status(user: dict = Depends(get_current_user)):
+    """Check the status of a running scrape job."""
+    return get_scrape_status()
 
 
 @router.post("/calculate")

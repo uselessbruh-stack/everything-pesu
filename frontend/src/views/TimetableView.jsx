@@ -48,7 +48,7 @@ export default function TimetableView() {
         <div>
           <h1 className="text-2xl font-semibold text-ink tracking-tight">Timetable</h1>
           <p className="text-sm text-ink-muted mt-1">
-            {view === 'today' ? 'Today's schedule' : 'Weekly overview'}
+            {view === 'today' ? "Today\u2019s schedule" : 'Weekly overview'}
           </p>
         </div>
         <div className="flex bg-surface-1 rounded-xl p-0.5">
