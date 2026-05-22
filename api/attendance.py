@@ -9,19 +9,22 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from .auth import get_current_user
-from .data_loader import (
-    calculate_attendance,
-    clear_cache,
-    get_course,
-    get_courses,
-    get_summary,
-)
-from .scraper_service import (
-    get_scrape_status,
-    is_scraper_available,
-    run_scraper_async,
-)
+try:
+    from .auth import get_current_user
+    from .data_loader import (
+        calculate_attendance, clear_cache, get_course, get_courses, get_summary,
+    )
+    from .scraper_service import (
+        get_scrape_status, is_scraper_available, run_scraper_async,
+    )
+except ImportError:
+    from auth import get_current_user
+    from data_loader import (
+        calculate_attendance, clear_cache, get_course, get_courses, get_summary,
+    )
+    from scraper_service import (
+        get_scrape_status, is_scraper_available, run_scraper_async,
+    )
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 

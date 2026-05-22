@@ -126,7 +126,10 @@ def _run_scraper_sync(username: str, password: str) -> dict:
         _scrape_status["progress"] = "Complete"
 
         # Reload the data_loader cache
-        from . import data_loader
+        try:
+            from . import data_loader
+        except ImportError:
+            import data_loader
         data_loader.clear_cache()
 
         logger.info("Scraper completed successfully")

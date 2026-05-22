@@ -6,8 +6,12 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends
 
-from .auth import get_current_user
-from .data_loader import get_timetable, get_timetable_for_day
+try:
+    from .auth import get_current_user
+    from .data_loader import get_timetable, get_timetable_for_day
+except ImportError:
+    from auth import get_current_user
+    from data_loader import get_timetable, get_timetable_for_day
 
 router = APIRouter(prefix="/api/timetable", tags=["timetable"])
 

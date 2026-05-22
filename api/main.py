@@ -19,11 +19,19 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from .attendance import router as attendance_router
-from .auth import router as auth_router
-from .results import router as results_router
-from .timetable import router as timetable_router
-from .user import router as user_router
+# Imports that work both as package (local) and standalone (Vercel)
+try:
+    from .attendance import router as attendance_router
+    from .auth import router as auth_router
+    from .results import router as results_router
+    from .timetable import router as timetable_router
+    from .user import router as user_router
+except ImportError:
+    from attendance import router as attendance_router
+    from auth import router as auth_router
+    from results import router as results_router
+    from timetable import router as timetable_router
+    from user import router as user_router
 
 app = FastAPI(
     title="PESU Academy API",
@@ -31,11 +39,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow Vercel preview/production domains + local dev
-origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:3000,http://localhost:5173",
-).split(",")
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -68,27 +72,18 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 @app.get("/")
 async def root():
-    """API info and available endpoints."""
-    return {
-        "name": "PESU Academy API",
-        "version": "1.0.0",
-        "endpoints": {
-            "auth": "/api/auth/login, /api/auth/me, /api/auth/logout",
-            "attendance": "/api/attendance/summary, /api/attendance/courses, /api/attendance/course/{code}",
-            "timetable": "/api/timetable, /api/timetable/week",
-            "results": "/api/results, /api/results/course/{code}",
-            "user": "/api/user/profile, /api/user/settings",
-            "health": "/api/health",
-        },
-    }
+    return {"name": "PESU Academy API", "version": "1.0.0"}
 
 
 @app.get("/api/health")
 async def health():
-    """Health check endpoint with diagnostics."""
-    import os
+    """Health check with filesystem diagnostics."""
     from pathlib import Path
-    from .data_loader import DATA_FILE
+
+    try:
+        from .data_loader import DATA_FILE
+    except ImportError:
+        from data_loader import DATA_FILE
 
     this_file = Path(__file__).resolve()
     candidates = [
@@ -100,7 +95,6 @@ async def health():
 
     return {
         "status": "ok",
-        "service": "pesu-academy-api",
         "__file__": str(this_file),
         "cwd": os.getcwd(),
         "data_file": str(DATA_FILE),
@@ -116,4 +110,3 @@ try:
     handler = Mangum(app)
 except ImportError:
     handler = None
-

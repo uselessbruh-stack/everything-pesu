@@ -5,8 +5,12 @@ User profile endpoints for PESU Academy API.
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from .auth import get_current_user
-from .data_loader import get_user_profile
+try:
+    from .auth import get_current_user
+    from .data_loader import get_user_profile
+except ImportError:
+    from auth import get_current_user
+    from data_loader import get_user_profile
 
 router = APIRouter(prefix="/api/user", tags=["user"])
 

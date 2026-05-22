@@ -4,8 +4,12 @@ Results endpoints for PESU Academy API.
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from .auth import get_current_user
-from .data_loader import get_results, get_results_for_course
+try:
+    from .auth import get_current_user
+    from .data_loader import get_results, get_results_for_course
+except ImportError:
+    from auth import get_current_user
+    from data_loader import get_results, get_results_for_course
 
 router = APIRouter(prefix="/api/results", tags=["results"])
 
