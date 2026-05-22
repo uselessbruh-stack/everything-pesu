@@ -86,12 +86,27 @@ async def root():
 @app.get("/api/health")
 async def health():
     """Health check endpoint with diagnostics."""
+    import os
+    from pathlib import Path
     from .data_loader import DATA_FILE
+
+    this_file = Path(__file__).resolve()
+    candidates = [
+        str(this_file.parent.parent / "attendance_data.json"),
+        str(this_file.parent / "attendance_data.json"),
+        "/var/task/attendance_data.json",
+        "/var/task/api/attendance_data.json",
+    ]
+
     return {
         "status": "ok",
         "service": "pesu-academy-api",
+        "__file__": str(this_file),
+        "cwd": os.getcwd(),
         "data_file": str(DATA_FILE),
         "data_file_exists": DATA_FILE.exists(),
+        "candidates": {p: Path(p).exists() for p in candidates},
+        "cwd_listing": os.listdir(os.getcwd())[:20],
     }
 
 
