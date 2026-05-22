@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 
 // Lazy loaded views
+import HomeView from './HomeView'
 const AttendanceView = lazy(() => import('./AttendanceView'))
 const CourseDetailView = lazy(() => import('./CourseDetailView'))
 const TimetableView = lazy(() => import('./TimetableView'))
