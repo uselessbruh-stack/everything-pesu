@@ -18,10 +18,6 @@ JWT_SECRET = os.getenv("JWT_SECRET", "pesu-dashboard-dev-secret-key-change-in-pr
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION = 86400  # 24 hours
 
-# Valid credentials from environment
-VALID_USERNAME = os.getenv("PESU_USERNAME", "pes1pg25ca005")
-VALID_PASSWORD = os.getenv("PESU_PASSWORD", "admin123")
-
 
 class LoginRequest(BaseModel):
     username: str
@@ -84,17 +80,22 @@ async def get_current_user(
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: LoginRequest):
-    """Authenticate with PESU credentials and get a JWT token."""
-    if body.username.lower() != VALID_USERNAME.lower() or body.password != VALID_PASSWORD:
+    """Authenticate with PESU credentials and get a JWT token.
+    Accepts any valid-looking PESU SRN + password.
+    """
+    username = body.username.strip()
+    password = body.password.strip()
+
+    if not username or not password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Username and password are required",
         )
 
-    token = create_token(body.username)
+    token = create_token(username)
     return TokenResponse(
         access_token=token,
-        user={"username": body.username},
+        user={"username": username},
     )
 
 
