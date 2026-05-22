@@ -19,7 +19,7 @@ CACHE_TTL = {
     "courses": 1800,      # 30 minutes
     "timetable": 3600,    # 1 hour
     "results": 3600,      # 1 hour
-    "profile": 3600,      # 1 hour
+    "profile": 3600,      # 1 hour ddfdf dfdf df d
 }
 
 def _find_data_file() -> Path:
