@@ -5,13 +5,19 @@ Serves attendance, timetable, results data from scraped PESU Academy data.
 Designed for Vercel serverless deployment via Mangum.
 """
 
+import logging
 import os
+import traceback
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from .attendance import router as attendance_router
 from .auth import router as auth_router
@@ -25,11 +31,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+# CORS — allow Vercel preview/production domains + local dev
+origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:5173",
+).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,6 +50,20 @@ app.include_router(attendance_router)
 app.include_router(timetable_router)
 app.include_router(results_router)
 app.include_router(user_router)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch-all handler so 500 errors return useful messages instead of blank crashes."""
+    tb = traceback.format_exc()
+    logger.error(f"Unhandled error on {request.url}: {exc}\n{tb}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": str(exc),
+            "type": type(exc).__name__,
+        },
+    )
 
 
 @app.get("/")
@@ -62,8 +85,14 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    """Health check endpoint."""
-    return {"status": "ok", "service": "pesu-academy-api"}
+    """Health check endpoint with diagnostics."""
+    from .data_loader import DATA_FILE
+    return {
+        "status": "ok",
+        "service": "pesu-academy-api",
+        "data_file": str(DATA_FILE),
+        "data_file_exists": DATA_FILE.exists(),
+    }
 
 
 # Mangum handler for Vercel serverless
@@ -72,3 +101,4 @@ try:
     handler = Mangum(app)
 except ImportError:
     handler = None
+

@@ -22,13 +22,33 @@ CACHE_TTL = {
     "profile": 3600,      # 1 hour
 }
 
-DATA_FILE = Path(__file__).resolve().parent.parent / "attendance_data.json"
+def _find_data_file() -> Path:
+    """Locate attendance_data.json — check multiple paths for Vercel compatibility."""
+    candidates = [
+        Path(__file__).resolve().parent.parent / "attendance_data.json",  # root (local dev)
+        Path(__file__).resolve().parent / "attendance_data.json",         # api/ folder
+        Path("/var/task") / "attendance_data.json",                       # Vercel serverless
+        Path("/var/task") / "api" / "attendance_data.json",               # Vercel alt
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    # Fallback to root path even if it doesn't exist yet
+    return candidates[0]
+
+
+DATA_FILE = _find_data_file()
 
 
 def _load_raw_data() -> dict:
     """Load raw JSON data from file."""
     global _raw_data
     if _raw_data is None:
+        if not DATA_FILE.exists():
+            raise FileNotFoundError(
+                f"attendance_data.json not found. Searched: {DATA_FILE}. "
+                "Run the scraper first or ensure the file is deployed."
+            )
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             _raw_data = json.load(f)
     return _raw_data
