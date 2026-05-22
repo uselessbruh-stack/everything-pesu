@@ -1,0 +1,9 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pyjwt>=2.8.0
+mangum>=0.17.0
+pydantic[email]>=2.0
+selenium>=4.10.0
+webdriver-manager>=4.0.0
+pandas>=2.0.0
+python-multipart>=0.0.6

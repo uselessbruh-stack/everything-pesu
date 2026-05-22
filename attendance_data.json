@@ -1,0 +1,567 @@
+{
+  "user": {
+    "username": "pes1pg25ca005",
+    "timestamp": "2026-05-18T16:06:11.383069"
+  },
+  "credentials": {
+    "teams": {
+      "username": "PES1PG25CA005@stu.pes.edu (For MS Teams) Password: R&184676013796of Username : PES1PG25CA005 (For Internet Captive Portal Login) Password: G_9Sn35- Username : WIFI SSID:GJBC-MCA Password: PES1PG25CA005 Click on www.office.com to login to PESU online classes",
+      "note": "For MS Teams"
+    },
+    "portal": {
+      "username": "PES1PG25CA005",
+      "note": "For Internet Captive Portal Login"
+    },
+    "wifi": {
+      "ssid": "GJBC-MCA Password: PES1PG25CA005 Click on www.office.com to login to PESU online classes",
+      "password": "R&184676013796of Username : PES1PG25CA005 (For Internet Captive Portal Login) Password: G_9Sn35- Username : WIFI SSID:GJBC-MCA Password: PES1PG25CA005 Click on www.office.com to login to PESU online classes",
+      "note": "WiFi Network"
+    }
+  },
+  "summary": {
+    "total_attended": 200,
+    "total_classes": 270,
+    "overall_percentage": 74.07,
+    "courses_count": 6,
+    "courses_below_requirement": 6,
+    "total_shortage": 27
+  },
+  "courses": [
+    {
+      "course_code": "UQ25CA601B",
+      "course_name": "Aptitude and Reasoning",
+      "attendance": {
+        "attended": 14,
+        "total": 19,
+        "percentage": 73
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 16,
+        "shortage": 2
+      },
+      "status": "✗ Below Required"
+    },
+    {
+      "course_code": "UQ25CA641BD1",
+      "course_name": "Cloud Services",
+      "attendance": {
+        "attended": 30,
+        "total": 38,
+        "percentage": 78
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 32,
+        "shortage": 2
+      },
+      "status": "✗ Below Required"
+    },
+    {
+      "course_code": "UQ25CA651B",
+      "course_name": "Algorithms Analysis and Design",
+      "attendance": {
+        "attended": 41,
+        "total": 58,
+        "percentage": 70
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 49,
+        "shortage": 8
+      },
+      "status": "✗ Below Required"
+    },
+    {
+      "course_code": "UQ25CA652B",
+      "course_name": "Data Communication and Networking",
+      "attendance": {
+        "attended": 40,
+        "total": 57,
+        "percentage": 70
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 48,
+        "shortage": 8
+      },
+      "status": "✗ Below Required"
+    },
+    {
+      "course_code": "UQ25CA653B",
+      "course_name": "Artificial Intelligence and Machine Learning",
+      "attendance": {
+        "attended": 36,
+        "total": 49,
+        "percentage": 73
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 41,
+        "shortage": 5
+      },
+      "status": "✗ Below Required"
+    },
+    {
+      "course_code": "UQ25CA654B",
+      "course_name": "Web Application Frameworks - I",
+      "attendance": {
+        "attended": 39,
+        "total": 49,
+        "percentage": 79
+      },
+      "requirement": {
+        "minimum_percentage": 85,
+        "required_classes": 41,
+        "shortage": 2
+      },
+      "status": "✗ Below Required"
+    }
+  ],
+  "timetable": {
+    "Monday": {
+      "08:45 AM-09:45 AM": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI,",
+      "09:45 AM-10:45 AM": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI,",
+      "11:15 AM-12:15 PM": "UQ25CA601B-APTITUDE AND REASONING\nABUBAKAR SIDDIK,",
+      "12:15 PM-01:15 PM": "UQ25CA654B-WEB APPLICATION FRAMEWORKS - I\nP SREENIVAS,",
+      "02:00 PM-03:00 PM": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,",
+      "03:00 PM-04:00 PM": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,"
+    },
+    "Tuesday": {
+      "08:45 AM-09:45 AM": "UQ25CA653B-ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING\nTHENMOZHI,",
+      "09:45 AM-10:45 AM": "UQ25CA653B-ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING\nTHENMOZHI,",
+      "": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,",
+      "11:15 AM-12:15 PM": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,"
+    },
+    "Wednesday": {
+      "08:45 AM-09:45 AM": "UQ25CA654B-WEB APPLICATION FRAMEWORKS - I\nP SREENIVAS,",
+      "09:45 AM-10:45 AM": "UQ25CA654B-WEB APPLICATION FRAMEWORKS - I\nP SREENIVAS,",
+      "": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI,",
+      "11:15 AM-12:15 PM": "UQ25CA641BB1-SCALABLE DATA PROCESSING\nNITEESH KR,\nUQ25CA641BB1-SCALABLE DATA PROCESSING\nGAYATHRI L,\nUQ25CA641BC1-NETWORK SECURITY\nMRS. ARCHANA A,\nUQ25CA641BD1-CLOUD SERVICES\nMR MANJUNATHA K V,\nUQ25CA641BD1-CLOUD SERVICES\nMENAKA C,\nUQ25CA641BD1-CLOUD SERVICES\nMRS AISWARYA BABURAJ,",
+      "12:15 PM-01:15 PM": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI,"
+    },
+    "Thursday": {
+      "08:45 AM-09:45 AM": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,",
+      "09:45 AM-10:45 AM": "UQ25CA651B-ALGORITHMS ANALYSIS AND DESIGN\nARCHANA M,",
+      "": "UQ25CA654B-WEB APPLICATION FRAMEWORKS - I\nP SREENIVAS,",
+      "11:15 AM-12:15 PM": "UQ25CA653B-ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING\nTHENMOZHI,",
+      "12:15 PM-01:15 PM": "UQ25CA654B-WEB APPLICATION FRAMEWORKS - I\nP SREENIVAS,"
+    },
+    "Friday": {
+      "08:45 AM-09:45 AM": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI, SRINIVASMURTHY G C,",
+      "09:45 AM-10:45 AM": "UQ25CA652B-DATA COMMUNICATION AND NETWORKING\nMR. SANTOSH.S.KATTI, SRINIVASMURTHY G C,",
+      "": "UQ25CA641BB1-SCALABLE DATA PROCESSING\nNITEESH KR,\nUQ25CA641BB1-SCALABLE DATA PROCESSING\nGAYATHRI L,\nUQ25CA641BC1-NETWORK SECURITY\nMRS. ARCHANA A,\nUQ25CA641BD1-CLOUD SERVICES\nMR MANJUNATHA K V,\nUQ25CA641BD1-CLOUD SERVICES\nMENAKA C,\nUQ25CA641BD1-CLOUD SERVICES\nMRS AISWARYA BABURAJ,",
+      "11:15 AM-12:15 PM": "UQ25CA653B-ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING\nTHENMOZHI,",
+      "12:15 PM-01:15 PM": "UQ25CA641BB1-SCALABLE DATA PROCESSING\nNITEESH KR,\nUQ25CA641BB1-SCALABLE DATA PROCESSING\nGAYATHRI L,\nUQ25CA641BC1-NETWORK SECURITY\nMRS. ARCHANA A,\nUQ25CA641BD1-CLOUD SERVICES\nMR MANJUNATHA K V,\nUQ25CA641BD1-CLOUD SERVICES\nMENAKA C,\nUQ25CA641BD1-CLOUD SERVICES\nMRS AISWARYA BABURAJ,"
+    }
+  },
+  "results": {
+    "Sem-2": {
+      "course_count": 4,
+      "courses": [
+        {
+          "course_code": "UQ25CA651B",
+          "course_name": "Algorithms Analysis and Design",
+          "assessments": {
+            "ISA 1": "29 /40.0",
+            "FINAL ISA": "0",
+            "ESA": "NA"
+          },
+          "marks": {
+            "ISA 1": {
+              "obtained": "29",
+              "total": "40.0",
+              "raw": "29 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "0"
+            },
+            "ESA": {
+              "raw": "NA"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA653B",
+          "course_name": "Artificial Intelligence and Machine Learning",
+          "assessments": {
+            "ISA 1": "31 /40.0",
+            "FINAL ISA": "0",
+            "ESA": "NA"
+          },
+          "marks": {
+            "ISA 1": {
+              "obtained": "31",
+              "total": "40.0",
+              "raw": "31 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "0"
+            },
+            "ESA": {
+              "raw": "NA"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA652B",
+          "course_name": "Data Communication and Networking",
+          "assessments": {
+            "FINAL ISA": "0",
+            "ESA": "NA"
+          },
+          "marks": {
+            "FINAL ISA": {
+              "raw": "0"
+            },
+            "ESA": {
+              "raw": "NA"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA654B",
+          "course_name": "Web Application Frameworks - I",
+          "assessments": {
+            "FINAL ISA": "0",
+            "ESA": "NA"
+          },
+          "marks": {
+            "FINAL ISA": {
+              "raw": "0"
+            },
+            "ESA": {
+              "raw": "NA"
+            }
+          }
+        }
+      ],
+      "type": "complete"
+    },
+    "Sem-1": {
+      "course_count": 6,
+      "courses": [
+        {
+          "course_code": "UQ25CA601A",
+          "course_name": "Personality Development",
+          "assessments": {
+            "Credits": "0 / 0",
+            "FINAL ISA": "NA"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "0",
+              "total": "0",
+              "raw": "0 / 0"
+            },
+            "FINAL ISA": {
+              "raw": "NA"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA652A",
+          "course_name": "Data Structures",
+          "assessments": {
+            "Credits": "5 / 5",
+            "ISA 1": "27 /40.0",
+            "ISA 2": "20 /40.0",
+            "FINAL ISA": "32"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "5",
+              "total": "5",
+              "raw": "5 / 5"
+            },
+            "ISA 1": {
+              "obtained": "27",
+              "total": "40.0",
+              "raw": "27 /40.0"
+            },
+            "ISA 2": {
+              "obtained": "20",
+              "total": "40.0",
+              "raw": "20 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "32"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA651A",
+          "course_name": "Programming with Python",
+          "assessments": {
+            "Credits": "5 / 5",
+            "ISA 2": "33 /40.0",
+            "FINAL ISA": "37"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "5",
+              "total": "5",
+              "raw": "5 / 5"
+            },
+            "ISA 2": {
+              "obtained": "33",
+              "total": "40.0",
+              "raw": "33 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "37"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA653A",
+          "course_name": "Databases and Applications",
+          "assessments": {
+            "Credits": "5 / 5",
+            "ISA 1": "35 /40.0",
+            "ISA 2": "29 /40.0",
+            "FINAL ISA": "42"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "5",
+              "total": "5",
+              "raw": "5 / 5"
+            },
+            "ISA 1": {
+              "obtained": "35",
+              "total": "40.0",
+              "raw": "35 /40.0"
+            },
+            "ISA 2": {
+              "obtained": "29",
+              "total": "40.0",
+              "raw": "29 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "42"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA641A",
+          "course_name": "Operating System Design",
+          "assessments": {
+            "Credits": "4 / 4",
+            "ISA 1": "22 /40.0",
+            "ISA 2": "30 /40.0",
+            "FINAL ISA": "36"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "4",
+              "total": "4",
+              "raw": "4 / 4"
+            },
+            "ISA 1": {
+              "obtained": "22",
+              "total": "40.0",
+              "raw": "22 /40.0"
+            },
+            "ISA 2": {
+              "obtained": "30",
+              "total": "40.0",
+              "raw": "30 /40.0"
+            },
+            "FINAL ISA": {
+              "raw": "36"
+            }
+          }
+        },
+        {
+          "course_code": "UQ25CA654A",
+          "course_name": "Object Oriented Software Engineering",
+          "assessments": {
+            "Credits": "5 / 5",
+            "FINAL ISA": "30"
+          },
+          "marks": {
+            "Credits": {
+              "obtained": "5",
+              "total": "5",
+              "raw": "5 / 5"
+            },
+            "FINAL ISA": {
+              "raw": "30"
+            }
+          }
+        }
+      ],
+      "type": "complete"
+    }
+  },
+  "calendar": {
+    "events": [
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 1,
+        "data": [
+          "all-day",
+          "",
+          "May Day"
+        ],
+        "raw_text": "all-day |  | May Day"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 2,
+        "data": [
+          "May 2, 2026\nSaturday"
+        ],
+        "raw_text": "May 2, 2026\nSaturday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 3,
+        "data": [
+          "all-day",
+          "",
+          "ISA 2, FAD, LWD"
+        ],
+        "raw_text": "all-day |  | ISA 2, FAD, LWD"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 4,
+        "data": [
+          "May 13, 2026\nWednesday"
+        ],
+        "raw_text": "May 13, 2026\nWednesday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 5,
+        "data": [
+          "all-day",
+          "",
+          "FAM 2 - S&H"
+        ],
+        "raw_text": "all-day |  | FAM 2 - S&H"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 6,
+        "data": [
+          "May 23, 2026\nSaturday"
+        ],
+        "raw_text": "May 23, 2026\nSaturday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 7,
+        "data": [
+          "all-day",
+          "",
+          "ISA 2 - S&H"
+        ],
+        "raw_text": "all-day |  | ISA 2 - S&H"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 8,
+        "data": [
+          "all-day",
+          "",
+          "PTM 2 - S&H"
+        ],
+        "raw_text": "all-day |  | PTM 2 - S&H"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 9,
+        "data": [
+          "May 25, 2026\nMonday"
+        ],
+        "raw_text": "May 25, 2026\nMonday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 11,
+        "data": [
+          "May 26, 2026\nTuesday"
+        ],
+        "raw_text": "May 26, 2026\nTuesday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 13,
+        "data": [
+          "May 27, 2026\nWednesday"
+        ],
+        "raw_text": "May 27, 2026\nWednesday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 15,
+        "data": [
+          "May 28, 2026\nThursday"
+        ],
+        "raw_text": "May 28, 2026\nThursday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 16,
+        "data": [
+          "all-day",
+          "",
+          "Bakrid"
+        ],
+        "raw_text": "all-day |  | Bakrid"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 17,
+        "data": [
+          "May 29, 2026\nFriday"
+        ],
+        "raw_text": "May 29, 2026\nFriday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 19,
+        "data": [
+          "May 30, 2026\nSaturday"
+        ],
+        "raw_text": "May 30, 2026\nSaturday"
+      },
+      {
+        "source": "table",
+        "table_index": 0,
+        "row_index": 21,
+        "data": [
+          "all-day",
+          "",
+          "LWD - S&H"
+        ],
+        "raw_text": "all-day |  | LWD - S&H"
+      },
+      {
+        "source": "announcement",
+        "description": "Announcements",
+        "raw_text": "Announcements"
+      }
+    ],
+    "event_count": 17,
+    "extraction_timestamp": "2026-05-18T16:06:11.382999"
+  }
+}
