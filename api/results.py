@@ -15,20 +15,10 @@ router = APIRouter(prefix="/api/results", tags=["results"])
 
 
 @router.get("")
-async def get_results(semester: int = 1, user: dict = Depends(get_current_user)):
-    """Get exam results for a semester — fetched live from PESU Academy."""
+async def get_results(user: dict = Depends(get_current_user)):
+    """Get exam results — scraped live from PESU Academy."""
     try:
-        data = await fetch_results(user["username"], user["password"], semester)
-        return data
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch results: {str(e)}")
-
-
-@router.get("/semester/{semester}")
-async def get_results_by_semester(semester: int, user: dict = Depends(get_current_user)):
-    """Get results for a specific semester."""
-    try:
-        data = await fetch_results(user["username"], user["password"], semester)
+        data = await fetch_results(user["username"], user["password"])
         return data
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch results: {str(e)}")
