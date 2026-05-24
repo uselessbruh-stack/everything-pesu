@@ -1,4 +1,4 @@
-"""Deep dive: timetable JSON and provisional results."""
+"""Get full timetable JSON and all variables from the script."""
 import asyncio
 import json
 import re
@@ -23,65 +23,56 @@ async def test():
         ajax = {**HEADERS, "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": csrf_val2, 
                 "Referer": f"{BASE_URL}/s/studentProfilePESU"}
 
-        # ===== TIMETABLE JSON =====
-        print("=== TIMETABLE JSON ===")
+        # Get full timetable HTML to find all JSON vars
         r_tt = await client.get(f"{BASE_URL}/s/studentProfilePESUAdmin", params={
             "controllerMode": "6415", "actionType": "5"
         }, headers=ajax)
         soup_tt = BeautifulSoup(r_tt.text, "html.parser")
+        
         for script in soup_tt.find_all("script"):
             text = script.string or ""
-            if "timeTableTemplateDetailsJson" in text or "timeTableSubjectListJson" in text:
-                # Extract all JSON arrays
-                json_matches = re.findall(r'var\s+(\w+)\s*=\s*(\[.*?\]);', text, re.DOTALL)
-                for var_name, json_str in json_matches:
-                    try:
-                        data = json.loads(json_str)
-                        print(f"\n{var_name}: {len(data)} items")
-                        for item in data[:3]:
-                            print(f"  {json.dumps(item, indent=2)[:400]}")
-                        if len(data) > 3:
-                            print(f"  ... and {len(data)-3} more")
-                    except json.JSONDecodeError:
-                        print(f"\n{var_name}: (parse error) {json_str[:200]}")
+            if "timeTable" in text or "days" in text:
+                # Find ALL var assignments
+                all_vars = re.findall(r'var\s+(\w+)\s*=\s*', text)
+                print(f"Variables found: {all_vars}")
+                
+                # Extract JSON for each
+                for var_name in all_vars:
+                    # Try to extract value (could be JSON or simple)
+                    match = re.search(rf'var\s+{var_name}\s*=\s*([\[\{{].*?[\]\}}])\s*;', text, re.DOTALL)
+                    if match:
+                        try:
+                            data = json.loads(match.group(1))
+                            if isinstance(data, list) and len(data) > 0:
+                                print(f"\n{var_name}: {len(data)} items, type={type(data[0]).__name__}")
+                                for item in data[:2]:
+                                    s = json.dumps(item, indent=2)
+                                    print(f"  {s[:500]}")
+                            elif isinstance(data, dict):
+                                print(f"\n{var_name}: dict, keys={list(data.keys())[:10]}")
+                                print(f"  {json.dumps(data, indent=2)[:500]}")
+                        except json.JSONDecodeError:
+                            val = match.group(1)[:200]
+                            print(f"\n{var_name}: (not JSON) {val}")
+                    else:
+                        # Simple var
+                        match2 = re.search(rf'var\s+{var_name}\s*=\s*([^;]+);', text)
+                        if match2:
+                            val = match2.group(1).strip()
+                            if len(val) < 100:
+                                print(f"\n{var_name} = {val}")
 
-        # ===== PROVISIONAL RESULTS =====
-        print("\n\n=== provisionalResults (controllerMode=6402, actionType=53) ===")
+        # Also try getSemesterDetails for Sem-2 to get ISA marks
+        print("\n\n=== getSemesterDetails Sem-2 full response ===")
         r = await client.post(f"{BASE_URL}/s/studentProfilePESUAdmin", data={
-            "controllerMode": "6402", "actionType": "53", "_csrf": csrf_val2,
+            "controllerMode": "6402", "actionType": "9", "semid": "3309", "_csrf": csrf_val2,
         }, headers={**ajax, "Content-Type": "application/x-www-form-urlencoded"})
-        print(f"Status: {r.status_code}, Length: {len(r.text)}")
         soup = BeautifulSoup(r.text, "html.parser")
-        tables = soup.find_all("table")
-        print(f"Tables: {len(tables)}")
-        for ti, table in enumerate(tables):
-            rows = table.find_all("tr")
-            print(f"\nTable {ti}: {len(rows)} rows")
-            for ri, row in enumerate(rows[:20]):
-                cells = [c.get_text(strip=True)[:50] for c in row.find_all(["td", "th"])]
-                if cells:
-                    print(f"  Row {ri}: {cells}")
+        # Find all course blocks
         text = soup.get_text(separator="\n", strip=True)
         lines = [l for l in text.split("\n") if l.strip()]
-        print(f"\nText ({len(lines)} lines):")
-        for l in lines[:15]:
+        print(f"Lines: {len(lines)}")
+        for l in lines[:50]:
             print(f"  {l[:100]}")
-        
-        # Try getSemesterDetails with semIds
-        print("\n\n=== getSemesterDetails ===")
-        for sem_id, sem_name in [("3309", "Sem-2"), ("3064", "Sem-1")]:
-            r = await client.post(f"{BASE_URL}/s/studentProfilePESUAdmin", data={
-                "controllerMode": "6402", "actionType": "9", "semid": sem_id, "_csrf": csrf_val2,
-            }, headers={**ajax, "Content-Type": "application/x-www-form-urlencoded"})
-            soup = BeautifulSoup(r.text, "html.parser")
-            tables = soup.find_all("table")
-            text = soup.get_text(strip=True)
-            print(f"\n{sem_name} (id={sem_id}): len={len(r.text)}, tables={len(tables)}, text={text[:200]}")
-            for ti, table in enumerate(tables):
-                rows = table.find_all("tr")
-                for row in rows[:10]:
-                    cells = [c.get_text(strip=True)[:40] for c in row.find_all(["td", "th"])]
-                    if cells:
-                        print(f"  {cells}")
 
 asyncio.run(test())
