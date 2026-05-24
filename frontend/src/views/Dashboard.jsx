@@ -10,6 +10,7 @@ import {
   Home,
   Menu,
   X,
+  Info,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -22,6 +23,7 @@ const CourseDetailView = lazy(() => import('./CourseDetailView'));
 const TimetableView = lazy(() => import('./TimetableView'));
 const ResultsView = lazy(() => import('./ResultsView'));
 const ProfileView = lazy(() => import('./ProfileView'));
+const AboutView = lazy(() => import('./AboutView'));
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Overview', icon: Home },
@@ -29,6 +31,7 @@ const NAV_ITEMS = [
   { id: 'timetable', label: 'Timetable', icon: Calendar },
   { id: 'results', label: 'Results', icon: FileText },
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'about', label: 'About', icon: Info },
 ];
 
 export default function Dashboard() {
@@ -62,15 +65,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-0 flex">
+    <div className="min-h-screen bg-surface-0 dark:bg-dark-0 flex transition-colors duration-200">
       {/* —— Sidebar (desktop) —— */}
-      <aside className="hidden lg:flex flex-col w-56 border-r border-line bg-white fixed h-screen">
+      <aside className="hidden lg:flex flex-col w-56 border-r border-line dark:border-dark-line bg-white dark:bg-dark-1 fixed h-screen">
         {/* Brand */}
-        <div className="flex items-center gap-2.5 px-5 h-14 border-b border-line">
+        <div className="flex items-center gap-2.5 px-5 h-14 border-b border-line dark:border-dark-line">
           <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
             <GraduationCap className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-sm text-ink tracking-tight">PESU Academy</span>
+          <span className="font-semibold text-sm text-ink dark:text-dark-ink tracking-tight">PESU Academy</span>
         </div>
 
         {/* Nav */}
@@ -81,8 +84,8 @@ export default function Dashboard() {
               onClick={() => handleNav(id)}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
                 active === id || (id === 'attendance' && active === 'course-detail')
-                  ? 'bg-accent-light text-accent-text'
-                  : 'text-ink-muted hover:text-ink hover:bg-surface-1'
+                  ? 'bg-accent-light text-accent-text dark:bg-accent/20'
+                  : 'text-ink-muted hover:text-ink hover:bg-surface-1 dark:text-dark-muted dark:hover:text-dark-ink dark:hover:bg-dark-2'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -92,13 +95,13 @@ export default function Dashboard() {
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 pb-4 border-t border-line pt-3">
-          <div className="text-xs text-ink-faint px-3 mb-2 truncate">
+        <div className="px-3 pb-4 border-t border-line dark:border-dark-line pt-3">
+          <div className="text-xs text-ink-faint dark:text-dark-faint px-3 mb-2 truncate">
             {user?.username || 'Student'}
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-ink-muted hover:text-bad hover:bg-bad-light transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-ink-muted dark:text-dark-muted hover:text-bad hover:bg-bad-light dark:hover:bg-bad/10 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             Sign out
@@ -107,44 +110,44 @@ export default function Dashboard() {
       </aside>
 
       {/* —— Mobile header —— */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 bg-white/80 backdrop-blur-md border-b border-line flex items-center justify-between px-4">
+      <header className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 bg-white/80 dark:bg-dark-1/80 backdrop-blur-md border-b border-line dark:border-dark-line flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
             <GraduationCap className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-sm text-ink">PESU Academy</span>
+          <span className="font-semibold text-sm text-ink dark:text-dark-ink">PESU Academy</span>
         </div>
         <button
           onClick={() => setMobileNav(!mobileNav)}
           className="btn-ghost p-2"
         >
-          {mobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {mobileNav ? <X className="w-5 h-5 text-ink dark:text-dark-ink" /> : <Menu className="w-5 h-5 text-ink dark:text-dark-ink" />}
         </button>
       </header>
 
       {/* —— Mobile nav overlay —— */}
       {mobileNav && (
         <div className="lg:hidden fixed inset-0 z-30">
-          <div className="absolute inset-0 bg-black/20" onClick={() => setMobileNav(false)} />
-          <div className="absolute top-14 left-0 right-0 bg-white border-b border-line p-3 animate-slide-up shadow-modal">
+          <div className="absolute inset-0 bg-black/20 dark:bg-black/40" onClick={() => setMobileNav(false)} />
+          <div className="absolute top-14 left-0 right-0 bg-white dark:bg-dark-1 border-b border-line dark:border-dark-line p-3 animate-slide-up shadow-modal">
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => handleNav(id)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   active === id
-                    ? 'bg-accent-light text-accent-text'
-                    : 'text-ink-muted hover:bg-surface-1'
+                    ? 'bg-accent-light text-accent-text dark:bg-accent/20'
+                    : 'text-ink-muted dark:text-dark-muted hover:bg-surface-1 dark:hover:bg-dark-2'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 {label}
               </button>
             ))}
-            <div className="border-t border-line mt-2 pt-2">
+            <div className="border-t border-line dark:border-dark-line mt-2 pt-2">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-ink-muted hover:text-bad"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-ink-muted dark:text-dark-muted hover:text-bad dark:hover:text-bad"
               >
                 <LogOut className="w-4 h-4" />
                 Sign out
@@ -187,6 +190,12 @@ export default function Dashboard() {
             {active === 'profile' && (
               <Suspense fallback={<LoadingSpinner text="Loading profile…" />}>
                 <ProfileView />
+              </Suspense>
+            )}
+
+            {active === 'about' && (
+              <Suspense fallback={<LoadingSpinner text="Loading about page…" />}>
+                <AboutView />
               </Suspense>
             )}
           </ErrorBoundary>

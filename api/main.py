@@ -23,12 +23,18 @@ try:
     from .results import router as results_router
     from .timetable import router as timetable_router
     from .user import router as user_router
+    from .ratings import router as ratings_router
+    from .contact import router as contact_router
+    from .database import init_db
 except ImportError:
     from attendance import router as attendance_router
     from auth import router as auth_router
     from results import router as results_router
     from timetable import router as timetable_router
     from user import router as user_router
+    from ratings import router as ratings_router
+    from contact import router as contact_router
+    from database import init_db
 
 app = FastAPI(
     title="PESU Academy API",
@@ -44,11 +50,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
 app.include_router(auth_router)
 app.include_router(attendance_router)
 app.include_router(timetable_router)
 app.include_router(results_router)
 app.include_router(user_router)
+app.include_router(ratings_router)
+app.include_router(contact_router)
 
 
 @app.exception_handler(Exception)
