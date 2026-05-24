@@ -174,7 +174,22 @@ export default function CourseDetailView({ course, onBack }) {
           </div>
 
           {/* Combined Result */}
-          {hasInput && (
+          {hasInput && (() => {
+            // Compute projected "can bunk" / "need to attend" from new numbers
+            const projPct = combinedResult.newPercentage;
+            const projAttended = combinedResult.newAttended;
+            const projTotal = combinedResult.newTotal;
+            let projCanBunk = 0;
+            let projNeedAttend = 0;
+            if (projPct >= targetPercentage) {
+              projCanBunk = Math.floor((projAttended * 100) / targetPercentage - projTotal);
+            } else {
+              projNeedAttend = Math.ceil(
+                (targetPercentage * projTotal - projAttended * 100) / (100 - targetPercentage)
+              );
+            }
+
+            return (
             <div className="mt-4 p-4 rounded-xl bg-surface-1 animate-fade-in space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-ink-muted">Projected attendance</span>
@@ -208,8 +223,26 @@ export default function CourseDetailView({ course, onBack }) {
                   <XCircle className="w-3 h-3" /> Below {targetPercentage}% target
                 </p>
               )}
+
+              {/* After-scenario stats */}
+              <div className="border-t border-line pt-2.5 flex items-center gap-4 text-xs">
+                {projCanBunk > 0 ? (
+                  <span className="text-ok font-medium">
+                    After this → can still skip <strong>{projCanBunk}</strong> classes
+                  </span>
+                ) : projNeedAttend > 0 ? (
+                  <span className="text-bad font-medium">
+                    After this → must attend <strong>{projNeedAttend}</strong> more to reach {targetPercentage}%
+                  </span>
+                ) : (
+                  <span className="text-warn font-medium">
+                    After this → exactly at target, no skips left
+                  </span>
+                )}
+              </div>
             </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Summary row */}
