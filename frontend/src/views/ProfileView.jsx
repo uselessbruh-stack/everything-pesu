@@ -39,15 +39,17 @@ export default function ProfileView() {
                 <User className="w-6 h-6 text-accent-text" />
               </div>
               <div>
-                <p className="text-base font-semibold text-ink">{profile.username?.toUpperCase()}</p>
+                <p className="text-base font-semibold text-ink">{profile.username}</p>
                 <p className="text-xs text-ink-faint">{profile.program}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <InfoRow icon={BookOpen} label="Department" value={profile.department} />
+              <InfoRow icon={BookOpen} label="SRN" value={profile.srn} />
+              <InfoRow icon={BookOpen} label="PESU ID" value={profile.pesu_id} />
+              <InfoRow icon={BookOpen} label="Branch" value={profile.department} />
               <InfoRow icon={BookOpen} label="Semester" value={profile.semester} />
-              <InfoRow icon={BookOpen} label="Courses" value={profile.courses_count} />
-              <InfoRow icon={BookOpen} label="Last Synced" value={formatDate(profile.last_synced)} />
+              <InfoRow icon={BookOpen} label="Section" value={profile.section} />
+              <InfoRow icon={BookOpen} label="Email" value={profile.email} />
             </div>
           </div>
 

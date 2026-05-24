@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, TrendingUp, TrendingDown, Calculator, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Calculator, CheckCircle2, XCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { useAttendanceCalculator } from '../hooks/useAttendanceCalculator';
@@ -8,17 +8,17 @@ export default function CourseDetailView({ course, onBack }) {
   const { course_code, course_name, attendance, requirement } = course;
   const targetPercentage = useAttendanceStore((s) => s.targetPercentage);
 
-  const { calculateAttendMore, calculateBunkClasses, required } =
+  const { calculateCombined, required } =
     useAttendanceCalculator(attendance.attended, attendance.total, targetPercentage);
 
   const [attendInput, setAttendInput] = useState(0);
-  const [bunkInput, setBunkInput] = useState(0);
+  const [skipInput, setSkipInput] = useState(0);
 
   const pct = attendance.percentage;
   const isBelow = pct < targetPercentage;
 
-  const attendResult = calculateAttendMore(attendInput);
-  const bunkResult = calculateBunkClasses(bunkInput);
+  const combinedResult = calculateCombined(attendInput, skipInput);
+  const hasInput = attendInput > 0 || skipInput > 0;
 
   // Pie chart data
   const pieData = [
@@ -121,85 +121,95 @@ export default function CourseDetailView({ course, onBack }) {
         </div>
       </div>
 
-      {/* ——— Calculator ——— */}
+      {/* ——— Combined Calculator ——— */}
       <div className="card p-0 overflow-hidden">
         <div className="px-5 pt-5 pb-3 flex items-center gap-2">
           <Calculator className="w-4 h-4 text-ink-muted" />
-          <h2 className="text-sm font-semibold text-ink">Attendance Calculator</h2>
+          <h2 className="text-sm font-semibold text-ink">What-If Calculator</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line">
-          {/* Attend scenario */}
-          <div className="p-5 space-y-3">
-            <div className="flex items-center gap-2 text-ok">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-wider">
-                If I attend more
-              </span>
-            </div>
-            <input
-              type="number"
-              min="0"
-              max="200"
-              value={attendInput}
-              onChange={(e) => setAttendInput(Math.max(0, parseInt(e.target.value) || 0))}
-              className="input-base text-sm"
-              placeholder="Number of classes"
-            />
-            {attendInput > 0 && (
-              <div className="animate-fade-in space-y-1.5">
-                <p className="text-sm font-semibold text-ink tabular-nums">
-                  {attendResult.newAttended}/{attendResult.newTotal} ={' '}
-                  {attendResult.newPercentage.toFixed(1)}%
-                </p>
-                {attendResult.meetsTarget ? (
-                  <p className="text-xs text-ok flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Meets target
-                  </p>
-                ) : (
-                  <p className="text-xs text-warn flex items-center gap-1">
-                    <XCircle className="w-3 h-3" /> Still below {targetPercentage}%
-                  </p>
-                )}
+        <div className="px-5 pb-4">
+          <p className="text-xs text-ink-muted mb-4">
+            Enter the number of upcoming classes you plan to attend and skip to see your projected attendance.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Attend input */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-ok">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  I'll attend
+                </span>
               </div>
-            )}
+              <input
+                type="number"
+                min="0"
+                max="200"
+                value={attendInput}
+                onChange={(e) => setAttendInput(Math.max(0, parseInt(e.target.value) || 0))}
+                className="input-base text-sm"
+                placeholder="0 classes"
+              />
+            </div>
+
+            {/* Skip input */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-bad">
+                <XCircle className="w-4 h-4" />
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  I'll skip
+                </span>
+              </div>
+              <input
+                type="number"
+                min="0"
+                max="200"
+                value={skipInput}
+                onChange={(e) => setSkipInput(Math.max(0, parseInt(e.target.value) || 0))}
+                className="input-base text-sm"
+                placeholder="0 classes"
+              />
+            </div>
           </div>
 
-          {/* Bunk scenario */}
-          <div className="p-5 space-y-3">
-            <div className="flex items-center gap-2 text-bad">
-              <TrendingDown className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-wider">
-                If I skip classes
-              </span>
-            </div>
-            <input
-              type="number"
-              min="0"
-              max="200"
-              value={bunkInput}
-              onChange={(e) => setBunkInput(Math.max(0, parseInt(e.target.value) || 0))}
-              className="input-base text-sm"
-              placeholder="Number of classes"
-            />
-            {bunkInput > 0 && (
-              <div className="animate-fade-in space-y-1.5">
-                <p className="text-sm font-semibold text-ink tabular-nums">
-                  {bunkResult.newAttended}/{bunkResult.newTotal} ={' '}
-                  {bunkResult.newPercentage.toFixed(1)}%
-                </p>
-                {bunkResult.meetsTarget ? (
-                  <p className="text-xs text-ok flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Still above target
-                  </p>
-                ) : (
-                  <p className="text-xs text-bad flex items-center gap-1 font-medium">
-                    <XCircle className="w-3 h-3" /> Below target!
-                  </p>
-                )}
+          {/* Combined Result */}
+          {hasInput && (
+            <div className="mt-4 p-4 rounded-xl bg-surface-1 animate-fade-in space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-ink-muted">Projected attendance</span>
+                <span className={`text-xl font-bold tabular-nums ${combinedResult.meetsTarget ? 'text-ok' : 'text-bad'}`}>
+                  {combinedResult.newPercentage.toFixed(1)}%
+                </span>
               </div>
-            )}
-          </div>
+
+              <div className="att-bar">
+                <div
+                  className={`att-bar-fill ${combinedResult.meetsTarget ? 'bg-ok' : 'bg-bad'}`}
+                  style={{ width: `${Math.min(100, combinedResult.newPercentage)}%` }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-ink-muted tabular-nums">
+                  {combinedResult.newAttended}/{combinedResult.newTotal} classes
+                </span>
+                <span className={`tabular-nums font-medium ${combinedResult.change >= 0 ? 'text-ok' : 'text-bad'}`}>
+                  {combinedResult.change >= 0 ? '+' : ''}{combinedResult.change.toFixed(1)}% from current
+                </span>
+              </div>
+
+              {combinedResult.meetsTarget ? (
+                <p className="text-xs text-ok flex items-center gap-1 font-medium">
+                  <CheckCircle2 className="w-3 h-3" /> Meets {targetPercentage}% target
+                </p>
+              ) : (
+                <p className="text-xs text-bad flex items-center gap-1 font-medium">
+                  <XCircle className="w-3 h-3" /> Below {targetPercentage}% target
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Summary row */}
