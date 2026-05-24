@@ -11,10 +11,6 @@ export default function ResultsView() {
   const semesters = data?.semesters || [];
   const [activeSem, setActiveSem] = useState(null);
 
-  // Default to first semester once loaded
-  if (semesters.length > 0 && activeSem === null) {
-    // Use timeout-free approach — just render with first
-  }
   const currentSem = activeSem ?? semesters[0]?.semester;
   const semData = semesters.find((s) => s.semester === currentSem);
 
@@ -54,11 +50,38 @@ export default function ResultsView() {
             ))}
           </div>
 
+          {/* SGPA badge */}
+          {semData && (semData.sgpa || semData.cgpa) && (
+            <div className="card flex items-center gap-4">
+              {semData.sgpa && (
+                <div>
+                  <p className="text-xs text-ink-faint uppercase tracking-wider">SGPA</p>
+                  <p className="text-2xl font-bold text-accent tabular-nums">{semData.sgpa}</p>
+                </div>
+              )}
+              {semData.cgpa && (
+                <div>
+                  <p className="text-xs text-ink-faint uppercase tracking-wider">CGPA</p>
+                  <p className="text-2xl font-bold text-ink tabular-nums">{semData.cgpa}</p>
+                </div>
+              )}
+              <div className="ml-auto">
+                <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${
+                  semData.type === 'provisional'
+                    ? 'bg-warn-light text-warn'
+                    : 'bg-ok-light text-ok'
+                }`}>
+                  {semData.type === 'provisional' ? 'Provisional' : 'Detailed'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Courses */}
           {semData && (
             <div className="space-y-2">
               <p className="text-xs text-ink-faint px-1">
-                {semData.course_count} courses · {semData.type}
+                {semData.course_count} courses
               </p>
               {semData.courses.map((course, i) => (
                 <ResultCard key={course.course_code} course={course} index={i} />
@@ -73,9 +96,10 @@ export default function ResultsView() {
 
 function ResultCard({ course, index }) {
   const [open, setOpen] = useState(false);
-  const { course_code, course_name, assessments, marks } = course;
+  const { course_code, course_name, assessments, marks, grade } = course;
 
   const assessmentEntries = Object.entries(assessments || {});
+  const hasDetails = assessmentEntries.length > 0;
 
   return (
     <div
@@ -83,35 +107,57 @@ function ResultCard({ course, index }) {
       style={{ animationDelay: `${index * 0.04}s`, animationFillMode: 'both' }}
     >
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => hasDetails && setOpen(!open)}
         className="w-full flex items-center justify-between gap-3 text-left"
       >
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-ink truncate">{course_name}</p>
           <p className="text-xs text-ink-faint font-mono mt-0.5">{course_code}</p>
         </div>
-        <ChevronDown
-          className={`w-4 h-4 text-ink-faint shrink-0 transition-transform duration-200 ${
-            open ? 'rotate-180' : ''
-          }`}
-        />
+        {grade && (
+          <span className={`text-sm font-bold tabular-nums px-2.5 py-1 rounded-lg ${
+            grade === 'S' || grade === 'A' || grade === 'AP'
+              ? 'bg-ok-light text-ok'
+              : grade === 'B'
+              ? 'bg-accent-light text-accent-text'
+              : grade === 'F' || grade === 'W'
+              ? 'bg-bad-light text-bad'
+              : 'bg-surface-2 text-ink-muted'
+          }`}>
+            {grade}
+          </span>
+        )}
+        {hasDetails && (
+          <ChevronDown
+            className={`w-4 h-4 text-ink-faint shrink-0 transition-transform duration-200 ${
+              open ? 'rotate-180' : ''
+            }`}
+          />
+        )}
       </button>
 
-      {open && assessmentEntries.length > 0 && (
+      {open && hasDetails && (
         <div className="mt-4 border-t border-line pt-3 space-y-2.5 animate-fade-in">
           {assessmentEntries.map(([name, rawValue]) => {
             const markData = marks?.[name];
             const obtained = markData?.obtained;
             const total = markData?.total;
-            const hasScore = obtained !== undefined && total !== undefined;
+            const hasScore = obtained !== undefined && total !== undefined && total > 0;
             const pct = hasScore ? (parseFloat(obtained) / parseFloat(total)) * 100 : null;
+
+            // For provisional results, rawValue is a string score
+            const displayValue = hasScore
+              ? `${obtained} / ${total}`
+              : typeof rawValue === 'object'
+              ? `${rawValue.score || '—'}${rawValue.max ? ` / ${rawValue.max}` : ''}`
+              : rawValue;
 
             return (
               <div key={name}>
                 <div className="flex justify-between items-center text-sm mb-1">
                   <span className="text-ink-muted">{name}</span>
                   <span className="font-medium text-ink tabular-nums">
-                    {hasScore ? `${obtained} / ${total}` : rawValue}
+                    {displayValue}
                   </span>
                 </div>
                 {pct !== null && (

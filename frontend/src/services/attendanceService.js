@@ -1,10 +1,18 @@
 import api from './api';
 
 export const attendanceService = {
-  getSummary: () => api.get('/api/attendance/summary').then((r) => r.data),
+  getSummary: (semesterId) =>
+    api.get('/api/attendance/summary', {
+      params: semesterId ? { semester_id: semesterId } : {},
+    }).then((r) => r.data),
 
-  getCourses: () => api.get('/api/attendance/courses').then((r) => r.data),
+  getCourses: (semesterId) =>
+    api.get('/api/attendance/courses', {
+      params: semesterId ? { semester_id: semesterId } : {},
+    }).then((r) => r.data),
 
-  getCourse: (code) =>
-    api.get(`/api/attendance/course/${code}`).then((r) => r.data),
+  getCourse: (code, semesterId) =>
+    api.get(`/api/attendance/course/${code}`, {
+      params: semesterId ? { semester_id: semesterId } : {},
+    }).then((r) => r.data),
 };

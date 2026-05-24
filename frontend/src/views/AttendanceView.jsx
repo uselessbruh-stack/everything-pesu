@@ -6,7 +6,11 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function AttendanceView({ onCourseSelect }) {
-  const fetchCourses = useCallback(() => attendanceService.getCourses(), []);
+  const [semesterId, setSemesterId] = useState(null); // null = latest
+  const fetchCourses = useCallback(
+    () => attendanceService.getCourses(semesterId),
+    [semesterId]
+  );
   const { data, isLoading, error, execute } = useAsync(fetchCourses);
   const targetPercentage = useAttendanceStore((s) => s.targetPercentage);
   const setTarget = useAttendanceStore((s) => s.setTargetPercentage);
@@ -14,6 +18,7 @@ export default function AttendanceView({ onCourseSelect }) {
   const [customTarget, setCustomTarget] = useState('');
 
   const courses = data?.courses || [];
+  const semesters = data?.semesters || [];
 
   const handleCustomTarget = () => {
     const val = parseInt(customTarget, 10);
@@ -21,6 +26,10 @@ export default function AttendanceView({ onCourseSelect }) {
       setTarget(val);
       setCustomTarget('');
     }
+  };
+
+  const handleSemesterChange = (id) => {
+    setSemesterId(id === semesterId ? null : id);
   };
 
   return (
@@ -40,6 +49,25 @@ export default function AttendanceView({ onCourseSelect }) {
           {isLoading ? 'Loading…' : 'Refresh'}
         </button>
       </div>
+
+      {/* Semester tabs */}
+      {semesters.length > 1 && (
+        <div className="flex bg-surface-1 rounded-xl p-0.5 w-fit">
+          {semesters.map(({ id, name }) => (
+            <button
+              key={id}
+              onClick={() => handleSemesterChange(id)}
+              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                (semesterId === id || (!semesterId && semesters[0]?.id === id))
+                  ? 'bg-white text-ink shadow-card'
+                  : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Target setting */}
       <div className="card p-4">
@@ -108,15 +136,22 @@ export default function AttendanceView({ onCourseSelect }) {
 }
 
 function CourseCard({ course, target, index, onClick }) {
-  const { course_code, course_name, attendance, requirement } = course;
+  const { course_code, course_name, attendance } = course;
   const pct = attendance.percentage;
   const isBelow = pct < target;
-  const shortage = requirement?.shortage || 0;
 
   // Bunk allowance calc (client-side)
   const canBunk =
     pct >= target
       ? Math.floor((attendance.attended * 100) / target - attendance.total)
+      : 0;
+
+  // Classes needed to reach target
+  const needed =
+    pct < target
+      ? Math.ceil(
+          (target * attendance.total - attendance.attended * 100) / (100 - target)
+        )
       : 0;
 
   const barColor = pct >= target ? 'bg-ok' : pct >= target - 10 ? 'bg-warn' : 'bg-bad';
@@ -153,7 +188,7 @@ function CourseCard({ course, target, index, onClick }) {
           {attendance.attended}/{attendance.total} classes
         </span>
         {isBelow ? (
-          <span className="badge-bad">Need {shortage} more</span>
+          <span className="badge-bad">Need {needed} more</span>
         ) : canBunk > 0 ? (
           <span className="badge-ok">Can skip {canBunk}</span>
         ) : (
